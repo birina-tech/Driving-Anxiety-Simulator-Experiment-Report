@@ -7,13 +7,23 @@ Utilizing a high-fidelity driving simulator and rigorous experimental design, we
 
 
 
-Lead author:
-Gongda Yu
+Authors:
 
-Academic advisor:
-Irina Benedyk
+- Gongda Yu (Lead), ITS Engineer, AECOM
 
-Co-Authors:
-Ye Wang
-Austin Angulo
+Email: gongdayu@buffalo.edu
 
+
+- Ye Wang, University at Buffalo 
+
+Email: ywang426@buffalo.edu 
+
+
+- Austin Angulo, University at Buffalo 
+
+Email: avangulo@buffalo.edu 
+
+
+- Irina Benedyk, University at Buffalo 
+
+Email: birina@buffalo.edu
