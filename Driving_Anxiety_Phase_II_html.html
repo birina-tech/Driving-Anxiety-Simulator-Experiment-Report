@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Irina Benedyk" />
+
+<meta name="date" content="2025-11-12" />
+
+<title>Driving Anxiety Phase II</title>
+
+<script src="Driving_Anxiety_Phase_II_html_files/header-attrs-2.30/header-attrs.js"></script>
+<script src="Driving_Anxiety_Phase_II_html_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="Driving_Anxiety_Phase_II_html_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="Driving_Anxiety_Phase_II_html_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="Driving_Anxiety_Phase_II_html_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="Driving_Anxiety_Phase_II_html_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="Driving_Anxiety_Phase_II_html_files/navigation-1.1/tabsets.js"></script>
+<link href="Driving_Anxiety_Phase_II_html_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="Driving_Anxiety_Phase_II_html_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Driving Anxiety Phase II</h1>
+<h4 class="author">Irina Benedyk</h4>
+<h4 class="date">2025-11-12</h4>
+
+</div>
+
+
+<p>This study utilizes a driving simulator available at the
+<strong>Transportation Research and Visualization Laboratory (TRAVL),
+University at Buffalo,</strong> to investigate the behavior and
+physiological responses of young drivers (aged 18-25) in complex driving
+scenarios.</p>
+<div id="study-objectives" class="section level2">
+<h2>Study Objectives</h2>
+<ol style="list-style-type: decimal">
+<li>Examine how driving anxiety affects the behavioral of young drivers
+across different critical driving scenarios;</li>
+<li>Quantify the impact of anxiety on drivers’ physiological and
+psychological states;</li>
+<li>Explore whether affirmative feedback influences driver behavior,
+psychological state (level of anxiety), and self-reported safety
+perception during driving tasks.</li>
+</ol>
+</div>
+<div id="key-takeaways" class="section level2">
+<h2>Key Takeaways</h2>
+<pre><code>The pre-defined anxiety_group from Phase 1 are correlated with some aspects of gaze behavior. The Non-Anxious (N) group consistently had higher saccade_count and fixation_count across almost all scenarios, suggesting a more active visual scanning pattern than the Anxious (A) group.
+
+The positive affirmation (between car and car_t2 scenarios) caused the two groups&#39; gaze behavior to move in opposite directions. 
+  (1) The Anxious group&#39;s focused AIO attention increased (car_t2_aoi_dur_percent: +5.9%), while the Non-Anxious group&#39;s focus remained stable (car_t2_aoi_dur_percent: +0.4%). 
+  (2) After the affirmaiton the dwell time for Non-Anxious group decresed, while Anxious group demostrated increase. 
+
+The anxiety_group from Phase 1 are correlated with most of the self-reported cognitive state metrics such as feeling streesed, confused, or safe. </code></pre>
+</div>
+<div id="experiment-set-up" class="section level2">
+<h2>Experiment Set Up</h2>
+<p>Four distinct experimental scenarios (two dynamic, two static) were
+developed within an Immersive Virtual Reality (IVE).</p>
+<p><img src="pictures/Scenario_map.png" width="60%" style="display: block; margin: auto;" /></p>
+<div id="dynamic-scenario-12---sudden-vehicle-at-intersection"
+class="section level3">
+<h3>Dynamic Scenario 1&amp;2 - Sudden Vehicle at Intersection</h3>
+<p>This scenario simulated an unexpected vehicle intrusion at an urban
+intersection, modeled based on typical roadway configurations found in
+urban areas of New York State, and includes intersection with pedestrian
+crosswalks, signage, and stop lines. Participants navigated along a
+primary urban route encountering three intersections where participant
+has right of way. At the third intersection, a vehicle approached
+rapidly from a minor side street, deliberately entering the intersection
+without properly yielding at the stop sign. Participants were required
+to quickly perceive the intrusion and react accordingly.</p>
+<p><img src="pictures/Car.png" width="60%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="dynamic-scenario-3---unexpected-pedestrian-crossing"
+class="section level3">
+<h3>Dynamic Scenario #3 - Unexpected Pedestrian Crossing</h3>
+<p>In this scenario, drivers transitioned from a rural roadway into an
+urbanized area, subsequently merging back into a rural environment. Upon
+passing a clearly marked unsignalized pedestrian crossing, participant
+encountered a pedestrian unexpectedly stepping onto the roadway which
+drivers will not have direct sight distance to until they are very
+close.</p>
+<p><img src="pictures/Ped.png" width="60%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="static-scenario-4---garbage-truck-obstructing"
+class="section level3">
+<h3>Static Scenario #4 - Garbage Truck Obstructing</h3>
+<p>This static scenario simulated a rural residential environment
+involving restricted forward visibility caused by stationary garbage
+truck. The truck model and positioning were chosen based on common
+real-world garbage collection operations, verified through pilot testing
+to ensure visibility obstruction.</p>
+<p><img src="pictures/Truck.png" width="60%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="static-scenario-5--utility-construction-zone"
+class="section level3">
+<h3>Static Scenario #5- Utility Construction Zone</h3>
+<p>This static scenario involved navigating through a rural residential
+environment partially blocked due to ongoing construction work. The
+scene was carefully designed according to standard roadway construction
+configurations outlined in the Manual on Uniform Traffic Control Devices
+(MUTCD). The setup featured a manhole surrounded by clearly marked
+construction barriers and signage.</p>
+<p><img src="pictures/Work_zone.png" width="60%" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="approach-to-scenario-randomization" class="section level2">
+<h2>Approach to scenario randomization</h2>
+<p>Scenarios were presented in a partially randomized order to control
+potential sequence effects and enhance experimental validity. Each
+scenario lasted approximately 3 minutes. At the beginning of each
+session, participants first completed two dynamic scenarios, either the
+Sudden Vehicle Intrusion or the Unexpected Pedestrian Crossing scenario
+was presented first, selected randomly to minimize order effects. This
+was followed by one of the two static scenarios, either the Utility
+Construction Zone or the Garbage Truck Obstruction, also selected in a
+randomized order for each participant to balance potential sequence
+biases.</p>
+<p>After the initial exposure to two dynamic and one static scenario,
+participants received standardized <strong>affirmative feedback</strong>
+emphasizing positive aspects of their performance, intended to reinforce
+confidence before the subsequent second run of the Sudden Vehicle
+Intrusion (dynamic) scenario.</p>
+<p>Finally, all participants completed a second static scenario (that
+was not presented before), allowing for within-subject comparisons to
+assess the impacts of positive affirmative on driving behaviors and
+perceived driving anxiety.</p>
+<p>Importantly, participants were not informed that they would repeat
+the Sudden Vehicle Intrusion scenario, ensuring that their responses
+during the second exposure reflected genuine reactions without
+anticipation of bias.</p>
+</div>
+<div id="major-observations-on-the-impact-of-the-positive-affirmation"
+class="section level2">
+<h2>Major observations on the impact of the positive affirmation</h2>
+<p>A comparison of visual behavior before and after positive affirmation
+in Car scenario for both Anxious (A) and Non-Anxious (N) groups.</p>
+<div id="general-scanning-saccades-fixations" class="section level3">
+<h3>General Scanning (Saccades &amp; Fixations):</h3>
+<pre><code>Both the Anxious and Non-Anxious groups showed a decrease in their scanning behavior, with both Saccade Count and Fixation Count dropping in the second Car scenario after recieving positive affirmation.
+
+The Anxious group&#39;s reduction in scanning was more pronounced. Their Saccade Count dropped by -24.3% (vs. -12.3% for the N-group).
+
+The Anxious group&#39;s Revisit Count (how often they looked back at an AOI) fell by -30.8%, a much larger drop than the Non-Anxious group&#39;s -18.2% decrease.</code></pre>
+<p><img src="Driving_Anxiety_Phase_II_html_files/figure-html/scanning-interaction-1.png" width="672" /></p>
+</div>
+<div id="gaze-focus-duration-dwell-time" class="section level3">
+<h3>Gaze Focus (Duration &amp; Dwell Time):</h3>
+<pre><code>The most significant finding is a difference in AOI duration (in %). The Anxious group&#39;s AOI duration (percent of time looking at the main hazard) increased by +5.9%. The Non-Anxious group&#39;s focus remained almost unchanged, increasing by only +0.4%, demostrating negative interaction between groups and intervention (positive affirmation) warranting careful consideration in the future study. 
+
+Despite the increased focus (AOI %), the total Dwell Time (total milliseconds spent on the AOI) decreased for both groups, as the Dwell Count (number of separate dwells) also dropped. Interection for this metric is also negative for both groups and intervention.
+
+The combination of observations related to fewer saccades and more AOI duration suggests the affirmation may have induced a &quot;tunnel vision&quot; effect in the Anxious group, causing them to scan less and focus more narrowly on the primary AOI. However, results are not statistically significant and further exploration is needed with larger sample size.
+
+The Anxious group, which already had a longer average Fixation Duration (longer gazes), demonstrated duration increase by +5.3% after the affirmation. In contrast, the Non-Anxious group&#39;s fixation duration decreased by -1.9%, </code></pre>
+<p><img src="Driving_Anxiety_Phase_II_html_files/figure-html/focus-interaction-plots-1.png" width="672" /></p>
+</div>
+<div id="statistical-significance" class="section level3">
+<h3>Statistical Significance:</h3>
+<pre><code>While these results demostrate some important trends, the t-test on the difference-in-differences (comparing the change in A-group vs. the change in N-group) did not show a statistically significant interaction for all metric (all p-values &gt; 0.05) but one. 
+
+This &quot;lack of significance&quot; does not mean there was no effect. It means we cannot statistically prove that the affirmation&#39;s effect was different for the two groups. </code></pre>
+</div>
+</div>
+<div id="major-observations-based-on-the-post-experiment-survey"
+class="section level2">
+<h2>Major observations based on the post-experiment survey</h2>
+<p>Comparing the 16 Anxious (A) participants and 15 Non-Anxious (N)
+participants.</p>
+<div id="scenario-specific-anxiety-1-9-scale" class="section level3">
+<h3>Scenario-Specific Anxiety (1-9 Scale)</h3>
+<div
+id="major-observations-based-on-the-statistical-output-from-your-code-for-the-i-was-stressed"
+class="section level4">
+<h4>Major observations based on the statistical output from your code
+for the ‘I Was Stressed’</h4>
+<pre><code>Unlike some of the other metrics where the results were mixed, the agreement to the statment &quot;I felt stressed&quot; shows a very clear pattern. The Anxious group reported significantly higher percived stress (rated on a 1-9 scale) than the Non-Anxious group in 4 out of the 5 scenarios: Car (p=0.004), Car_T2 (p=0.006), Truck (p=0.003), and Work Zone (p=0.008).
+
+There is a clear separation in the baseline stress ratings. The Anxious group&#39;s mean stress was always higher (lowest was 3.56). The Non-Anxious group&#39;s mean stress was consistently low (all 2.67 or below), except for the Pedestrian scenario (4.00).
+
+The Pedestrian scenario was the only one where the stress ratings were statistically similar (p=0.145). It was also the only scenario where the Non-Anxious group&#39;s mean stress (4.00) was higher than their rating for any other scenario, suggesting this scenario was uniquely stressful for them in a way the others were not.</code></pre>
+<p><img src="Driving_Anxiety_Phase_II_html_files/figure-html/stressed-ratings-plot-1.png" width="672" /></p>
+<table>
+<caption>T-Test P-Values: ‘I Felt Stressed’ (Anxious
+vs. Non-Anxious)</caption>
+<thead>
+<tr class="header">
+<th align="left">Scenario</th>
+<th align="right">P-Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Car</td>
+<td align="right">0.004</td>
+</tr>
+<tr class="even">
+<td align="left">Car_T2</td>
+<td align="right">0.006</td>
+</tr>
+<tr class="odd">
+<td align="left">Pedestrian</td>
+<td align="right">0.145</td>
+</tr>
+<tr class="even">
+<td align="left">Truck</td>
+<td align="right">0.003</td>
+</tr>
+<tr class="odd">
+<td align="left">Work Zone</td>
+<td align="right">0.008</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div
+id="major-observations-based-on-the-statistical-output-from-your-code-for-the-i-was-confused"
+class="section level4">
+<h4>Major observations based on the statistical output from your code
+for the ‘I Was Confused’</h4>
+<pre><code>The Anxious group reported significantly higher confusion ratings than the Non-Anxious group in 3 out of the 5 scenarios. The differences were largest in the second Car scenario (p &lt; 0.001), the initial Car scenario (p = 0.009), and the Work Zone scenario (p = 0.015). In the second Car scenario (Car_T2), the difference between ratings was 2.1 with Anxious group&#39;s mean confusion was 3.50, while the Non-Anxious group&#39;s was only 1.40.
+
+Unlike the &quot;I Felt Stressed&quot; metric where both groups&#39; ratings dropped in the second Car scenario, the Anxious group&#39;s &quot;I Was Confused&quot; rating remained high and virtually unchanged after the affirmation (Car: 3.69, Car_T2: 3.50). The Non-Anxious group, however, did see a drop in their confusion (Car: 2.07, Car_T2: 1.40). This suggests the positive affirmation did not alleviate the feeling of confusion for the Anxious participants. 
+
+The Pedestrian and Truck scenarios were the only two where there was no statistically significant difference in confusion between the two groups. These scenarios also had the highest confusion ratings for both groups (Anxious: 3.75 &amp; 4.56; Non-Anxious: 3.00 &amp; 3.40), suggesting these events invoke similar confusion level for all participants, regardless of their anxiety group. </code></pre>
+<p><img src="Driving_Anxiety_Phase_II_html_files/figure-html/confused-ratings-plot-and-stats-1.png" width="672" /></p>
+<table>
+<caption>T-Test P-Values: ‘I Was Confused’ (Anxious
+vs. Non-Anxious)</caption>
+<thead>
+<tr class="header">
+<th align="left">Scenario</th>
+<th align="right">P-Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Car</td>
+<td align="right">0.009</td>
+</tr>
+<tr class="even">
+<td align="left">Car_T2</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">Pedestrian</td>
+<td align="right">0.288</td>
+</tr>
+<tr class="even">
+<td align="left">Truck</td>
+<td align="right">0.107</td>
+</tr>
+<tr class="odd">
+<td align="left">Work Zone</td>
+<td align="right">0.015</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div
+id="major-observations-based-on-the-statistical-analysis-of-the-i-felt-safe"
+class="section level4">
+<h4>Major observations based on the statistical analysis of the ‘I Felt
+Safe’</h4>
+<p>(Note: For this question, a higher score (1-9) means “Completely
+agree” / felt more safe.)</p>
+<pre><code>This is the most conclusive finding across all three survey questions. The difference between the two groups is statistically significant (p &lt; 0.01) for every single scenario. The Non-Anxious group&#39;s mean safety rating was consistently high (between 7.27 and 8.60), while the Anxious group&#39;s ratings were substantially lower (between 5.38 and 6.69).
+
+Unlike the &quot;confusion&quot; metrics, the positive affirmation had a positive effect on safety ratings for both groups. The Anxious group&#39;s safety rating rose from 6.31 to 6.69, and the Non-Anxious group&#39;s rating also rose from 8.13 to 8.60. Both groups felt safest in the Car_T2 scenario.
+
+The &quot;Safest&quot; Scenario for the Anxious Group Was Still Worse Than the &quot;Least Safe&quot; for the Non-Anxious Group. To put the gap in perspective, the highest mean safety rating for the Anxious group (6.69 in Car_T2) was still significantly lower than the lowest mean safety rating for the Non-Anxious group (7.27 in Pedestrian). </code></pre>
+<p><img src="Driving_Anxiety_Phase_II_html_files/figure-html/safe-ratings-plot-and-stats-1.png" width="672" /></p>
+<table>
+<caption>T-Test P-Values: ‘I Felt Safe’ (Anxious
+vs. Non-Anxious)</caption>
+<thead>
+<tr class="header">
+<th align="left">Scenario</th>
+<th align="right">P-Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Car</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">Car_T2</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">Pedestrian</td>
+<td align="right">0.002</td>
+</tr>
+<tr class="even">
+<td align="left">Truck</td>
+<td align="right">0.006</td>
+</tr>
+<tr class="odd">
+<td align="left">Work Zone</td>
+<td align="right">0.000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="post-experiment-perceptions-simulation-sickness"
+class="section level3">
+<h3>Post-Experiment Perceptions: Simulation Sickness</h3>
+<pre><code>Both groups reported very similar levels of simulator sickness, with the Anxious group&#39;s mean SSQ score (3.17) being only slightly higher than the Non-Anxious group&#39;s (3.05).
+
+9. Anxious Group Rated Realism Higher: Contrary to what might be expected, the Anxious group rated the &quot;Overall realism of the simulation&quot; (Percep_Realism) and &quot;Realism of visual events&quot; (Percep_Events) significantly higher than the Non-Anxious group.
+
+10. Non-Anxious Group Rated Simulator Control Higher: The Non-Anxious group gave higher ratings for Percep_Steering (5.53 vs 5.06) and Percep_Response (5.20 vs 4.56), suggesting they felt the simulator&#39;s controls were more realistic or comfortable than the Anxious group did.  </code></pre>
+<table>
+<caption>Mean Simulator Sickness (SSQ) Score</caption>
+<thead>
+<tr class="header">
+<th align="left">Anxiety Group</th>
+<th align="right">Mean SSQ Score</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Non-Anxious</td>
+<td align="right">3.05</td>
+</tr>
+<tr class="even">
+<td align="left">Anxious</td>
+<td align="right">3.17</td>
+</tr>
+</tbody>
+</table>
+<p><img src="Driving_Anxiety_Phase_II_html_files/figure-html/ssq-plot-1.png" width="672" /></p>
+</div>
+<div id="post-experiment-perceptions-simulator-perception"
+class="section level3">
+<h3>Post-Experiment Perceptions: Simulator Perception</h3>
+<pre><code>Contrary to what might be expected, the Anxious group rated the &quot;Overall realism of the simulation&quot; and &quot;Realism of visual events&quot; higher than the Non-Anxious group.
+
+The Non-Anxious group gave higher ratings for percieved steering realism (5.53 vs 5.06) and percieved steering vehicle response (5.20 vs 4.56), suggesting they felt the simulator&#39;s controls were more realistic or comfortable than the Anxious group did.</code></pre>
+<pre><code>## [1] &quot;~~~ Mean Simulator Perception Ratings (1-9 Scale) ~~~&quot;</code></pre>
+<table>
+<caption>Mean Simulator Perception Ratings (1-9 Scale)</caption>
+<thead>
+<tr class="header">
+<th align="left">question_label</th>
+<th align="right">Non-Anxious</th>
+<th align="right">Anxious</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Realism of Sim</td>
+<td align="right">4.07</td>
+<td align="right">5.00</td>
+</tr>
+<tr class="even">
+<td align="left">Realism of Events</td>
+<td align="right">4.13</td>
+<td align="right">5.00</td>
+</tr>
+<tr class="odd">
+<td align="left">Steering Control</td>
+<td align="right">5.53</td>
+<td align="right">5.06</td>
+</tr>
+<tr class="even">
+<td align="left">Vehicle Response</td>
+<td align="right">5.20</td>
+<td align="right">4.56</td>
+</tr>
+</tbody>
+</table>
+<p><img src="Driving_Anxiety_Phase_II_html_files/figure-html/perception-plot-1.png" width="672" /></p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
