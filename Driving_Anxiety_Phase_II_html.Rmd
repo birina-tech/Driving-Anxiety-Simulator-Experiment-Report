@@ -1,0 +1,1114 @@
+---
+title: "Driving Anxiety Phase II"
+author: "Irina Benedyk"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include = FALSE, message = FALSE, warning = FALSE}
+# ~~~~~~~~~~~ Install (if needed) and Load Libraries ~~~~~~~~~~~
+# install.packages("readr")
+# install.packages("janitor")
+# install.packages("dplyr")
+# install.packages("tidyr")
+# install.packages("stringr")
+# install.packages("ggplot2")
+# install.packages("knitr")
+
+library(readr)    # For loading CSVs (read_csv)
+library(janitor)  # For cleaning column names (clean_names)
+library(dplyr)    # For data manipulation (mutate, filter, etc.)
+library(tidyr)    # For tidying data (pivot_longer, separate)
+library(stringr)  # For string manipulation (str_remove)
+library(ggplot2)  # For all plots
+library(knitr)    # For creating tables (kable)
+
+
+# ~~~~~~~~~~ Load Raw Data Files ~~~~~~~~~~~
+
+# Load Gaze Data
+# We tell read_csv to treat the text "N/A" as a missing value (NA)
+# This will remove one observations, A29 (I am almost sure)
+df_gaze <- read_csv("Gaze_All.csv", na = "N/A") %>%
+  clean_names() # Converts 'X-ID' to 'x_id'
+
+# Load Phase I Data (Pre-Experiment Surveys)
+df_phase1 <- read_csv("Driving_Anxiety_Phase_I_30.csv") 
+
+# Load Phase II Data (Post-Experiment Surveys)
+df_phase2 <- read_csv("Post_Experiment_Driving_Anxiety.csv")
+
+
+# ~~~~~~~ Prepare 'df_gaze_long_all' (for Gaze Analysis) ~~~~~~~~~~~~~
+
+df_gaze_long_all <- df_gaze %>%
+  
+  # Create the 'anxiety_group' factor
+  mutate(
+    anxiety_group = case_when(
+      startsWith(x_id, "A") ~ "Anxious",
+      startsWith(x_id, "N") ~ "Non-Anxious"
+    ),
+    anxiety_group = factor(anxiety_group, levels = c("Non-Anxious", "Anxious"))
+  ) %>%
+  
+  # Pivot the data from wide (many columns) to long (few columns)
+  pivot_longer(
+    cols = -c(x_id, anxiety_group), # Pivot all columns *except* these two
+    names_to = "metric_raw",
+    values_to = "value"
+  ) %>%
+  
+  # Separate Scenario from Metric
+  # First, create the 'scenario' column based on the 5 prefixes
+  # We must check for "car_t2" BEFORE "car"
+  mutate(
+    scenario = case_when(
+      startsWith(metric_raw, "car_t2_") ~ "car_t2",
+      startsWith(metric_raw, "car_") ~ "car",
+      startsWith(metric_raw, "ped_") ~ "ped",
+      startsWith(metric_raw, "truck_") ~ "truck",
+      startsWith(metric_raw, "workz_") ~ "workz"
+    )
+  ) %>%
+  
+  # Now, create the 'metric' column by removing the prefix
+  mutate(
+    metric = str_remove(metric_raw, paste0(scenario, "_")),
+    # Make metric names cleaner for plotting
+      metric = str_replace_all(metric, "_", " ") %>% str_to_title()
+    ) %>%
+    
+    # Remove NAs and any rows that didn't match a scenario
+    filter(!is.na(value), !is.na(anxiety_group), !is.na(scenario))
+
+
+# ~~~~~~~~~~~~ Prepare 'df_phase2_analysis' (for Survey Analysis) ~~~~~~~~~~~~~~
+
+# Create a small helper dataframe with just the participant ID and their group
+df_groups <- df_phase1 %>%
+  select(x_id) %>%  # 1. Keep ONLY the x_id column
+  mutate(          # 2. Create the new anxiety_group column FROM x_id
+    anxiety_group = case_when(
+      startsWith(x_id, "A") ~ "Anxious",
+      startsWith(x_id, "N") ~ "Non-Anxious"
+    )
+  ) %>%
+  mutate(          # 3. In a *separate* mutate, convert to a factor
+    anxiety_group = factor(anxiety_group, levels = c("Non-Anxious", "Anxious"))
+  ) %>%
+  distinct() # 4. Keep unique rows. df_groups now has BOTH 'x_id' and 'anxiety_group'
+
+
+# Merge the anxiety_group into the Phase II data
+# This join will now work because df_groups has the 'x_id' column
+df_phase2_analysis <- df_phase2 %>%
+  left_join(df_groups, by = "x_id") %>%
+  # Filter out any participants who aren't in the A or N groups
+  filter(!is.na(anxiety_group))
+
+
+# ~~~~~ Create a Master "Long" Data Frame ~~~~
+# We stack the 5 run-order blocks
+# on top of each other into a single, tidy data frame.
+
+# Block for Run 1
+run1_data <- df_phase2_analysis %>%
+  select(
+    x_id, anxiety_group,
+    scenario_code = QID158, # This identifies the scenario still numbers
+    stressed = QID159_1,    # i_felt_stressed
+    confused = QID159_2,    # i_was_confused
+    safe = QID159_3         # i_felt_safe
+  )
+
+# Block for Run 2
+run2_data <- df_phase2_analysis %>%
+  select(
+    x_id, anxiety_group,
+    scenario_code = Q184,
+    stressed = Q185_1,
+    confused = Q185_2,
+    safe = Q185_3
+  )
+
+# Block for Run 3
+run3_data <- df_phase2_analysis %>%
+  select(
+    x_id, anxiety_group,
+    scenario_code = Q181,
+    stressed = Q182_1,
+    confused = Q182_2,
+    safe = Q182_3
+  )
+
+# Block for Run 4
+run4_data <- df_phase2_analysis %>%
+  select(
+    x_id, anxiety_group,
+    scenario_code = Q187,
+    stressed = Q188_1,
+    confused = Q188_2,
+    safe = Q188_3
+  )
+
+# Block for Run 5
+run5_data <- df_phase2_analysis %>%
+  select(
+    x_id, anxiety_group,
+    scenario_code = Q190,
+    stressed = Q191_1,
+    confused = Q191_2,
+    safe = Q191_3
+  )
+
+# Stack all 5 blocks together
+df_long_post_experiment <- bind_rows(
+  run1_data, run2_data, run3_data, run4_data, run5_data
+)
+
+# ~~~~~ Translate Scenario Codes to Names ~~~~~
+# Now we use the long data to translate the numeric codes to
+# the scenario names you provided.
+df_long_post_experiment_named <- df_long_post_experiment %>%
+  mutate(
+    scenario_name = case_when(
+      scenario_code == 4 ~ "Car",
+      scenario_code == 7 ~ "Pedestrian",
+      scenario_code == 5 ~ "Work Zone",
+      scenario_code == 8 ~ "Car_T2",
+      scenario_code == 6 ~ "Truck",
+      TRUE ~ "Other" # A safety catch-all
+    )
+  ) %>%
+  # Filter out any rows that didn't have a valid scenario code
+  filter(scenario_name != "Other") %>%
+  # Set the factor order for the columns
+  mutate(scenario_name = factor(
+    scenario_name, 
+    levels = c("Car", "Car_T2", "Pedestrian", "Truck", "Work Zone")
+  ))
+
+# ~~~~~ Create  Final 3 Data Frames ~~~~
+# Now that we have a tidy data frame, we can easily pivot_wider
+# to get the exact format you want.
+
+# Data frame 1: i_felt_stressed_data
+i_felt_stressed_data <- df_long_post_experiment_named %>%
+  select(x_id, anxiety_group, scenario_name, stressed) %>%
+  pivot_wider(
+    names_from = scenario_name,
+    values_from = stressed
+  )
+
+# Data frame 2: i_was_confused_data
+i_was_confused_data <- df_long_post_experiment_named %>%
+  select(x_id, anxiety_group, scenario_name, confused) %>%
+  pivot_wider(
+    names_from = scenario_name,
+    values_from = confused
+  )
+
+# Data frame 3: i_felt_safe_data
+i_felt_safe_data <- df_long_post_experiment_named %>%
+  select(x_id, anxiety_group, scenario_name, safe) %>%
+  pivot_wider(
+    names_from = scenario_name,
+    values_from = safe
+  )
+
+
+
+```
+
+
+This study utilizes a driving simulator available at the **Transportation Research and Visualization Laboratory (TRAVL), University at Buffalo,** to investigate the behavior and physiological responses of young drivers (aged 18-25) in complex driving scenarios. 
+
+## Study Objectives
+
+  (1) Examine how driving anxiety affects the behavioral of young drivers across different critical driving scenarios; 
+  (2) Quantify the impact of anxiety on drivers’ physiological and psychological states; 
+  (3) Explore whether affirmative feedback influences driver behavior, psychological state (level of anxiety), and self-reported safety perception during driving tasks.
+ 
+ 
+
+## Key Takeaways 
+ 
+    The pre-defined anxiety_group from Phase 1 are correlated with some aspects of gaze behavior. The Non-Anxious (N) group consistently had higher saccade_count and fixation_count across almost all scenarios, suggesting a more active visual scanning pattern than the Anxious (A) group.
+
+    The positive affirmation (between car and car_t2 scenarios) caused the two groups' gaze behavior to move in opposite directions. 
+      (1) The Anxious group's focused AIO attention increased (car_t2_aoi_dur_percent: +5.9%), while the Non-Anxious group's focus remained stable (car_t2_aoi_dur_percent: +0.4%). 
+      (2) After the affirmaiton the dwell time for Non-Anxious group decresed, while Anxious group demostrated increase. 
+
+    The anxiety_group from Phase 1 are correlated with most of the self-reported cognitive state metrics such as feeling streesed, confused, or safe. 
+ 
+## Experiment Set Up 
+  
+Four distinct experimental scenarios (two dynamic, two static) were developed within an Immersive Virtual Reality (IVE).
+
+
+### Dynamic Scenario 1&2 - Sudden Vehicle at Intersection 
+This scenario simulated an unexpected vehicle intrusion at an urban intersection, modeled based on typical roadway configurations found in urban areas of New York State, and includes intersection with pedestrian crosswalks, signage, and stop lines. Participants navigated along a primary urban route encountering three intersections where participant has right of way. At the third intersection, a vehicle approached rapidly from a minor side street, deliberately entering the intersection without properly yielding at the stop sign. Participants were required to quickly perceive the intrusion and react accordingly. 
+
+```{r scenario-map-image2, echo=FALSE, out.width="50%", fig.align="center"}
+knitr::include_graphics("pictures/Car.png")
+```
+
+
+### Dynamic Scenario #3 - Unexpected Pedestrian Crossing
+In this scenario, drivers transitioned from a rural roadway into an urbanized area, subsequently merging back into a rural environment. Upon passing a clearly marked unsignalized pedestrian crossing, participant encountered a pedestrian unexpectedly stepping onto the roadway which drivers will not have direct sight distance to until they are very close. 
+
+```{r scenario-map-image3, echo=FALSE, out.width="50%", fig.align="center"}
+knitr::include_graphics("pictures/Ped.png")
+```
+
+
+###	Static Scenario #4 - Garbage Truck Obstructing
+This static scenario simulated a rural residential environment involving restricted forward visibility caused by stationary garbage truck. The truck model and positioning were chosen based on common real-world garbage collection operations, verified through pilot testing to ensure visibility obstruction.
+
+```{r scenario-map-image4, echo=FALSE, out.width="50%", fig.align="center"}
+knitr::include_graphics("pictures/Truck.png")
+```
+
+
+###	Static Scenario #5- Utility Construction Zone
+This static scenario involved navigating through a rural residential environment partially blocked due to ongoing construction work. The scene was carefully designed according to standard roadway construction configurations outlined in the Manual on Uniform Traffic Control Devices (MUTCD). The setup featured a manhole surrounded by clearly marked construction barriers and signage. 
+
+
+```{r scenario-map-image5, echo=FALSE, out.width="50%", fig.align="center"}
+knitr::include_graphics("pictures/Work_zone.png")
+```
+
+
+## Approach to scenario randomization
+Scenarios were presented in a partially randomized order to control potential sequence effects and enhance experimental validity. Each scenario lasted approximately 3 minutes. 
+At the beginning of each session, participants first completed two dynamic scenarios, either the Sudden Vehicle Intrusion or the Unexpected Pedestrian Crossing scenario was presented first, selected randomly to minimize order effects. This was followed by one of the two static scenarios, either the Utility Construction Zone or the Garbage Truck Obstruction, also selected in a randomized order for each participant to balance potential sequence biases.
+
+After the initial exposure to two dynamic and one static scenario, participants received standardized **affirmative feedback** emphasizing positive aspects of their performance, intended to reinforce confidence before the subsequent second run of the Sudden Vehicle Intrusion (dynamic) scenario. 
+
+Finally, all participants completed a second static scenario (that was not presented before), allowing for within-subject comparisons to assess the impacts of positive affirmative on driving behaviors and perceived driving anxiety. 
+
+Importantly, participants were not informed that they would repeat the Sudden Vehicle Intrusion scenario, ensuring that their responses during the second exposure reflected genuine reactions without anticipation of bias. 
+
+
+
+
+
+
+
+## Major observations on the impact of the positive affirmation
+
+A comparison of visual behavior before and after positive affirmation in Car scenario for both Anxious (A) and Non-Anxious (N) groups.
+
+### General Scanning (Saccades & Fixations):
+
+    Both the Anxious and Non-Anxious groups showed a decrease in their scanning behavior, with both Saccade Count and Fixation Count dropping in the second Car scenario after recieving positive affirmation.
+
+    The Anxious group's reduction in scanning was more pronounced. Their Saccade Count dropped by -24.3% (vs. -12.3% for the N-group).
+
+    The Anxious group's Revisit Count (how often they looked back at an AOI) fell by -30.8%, a much larger drop than the Non-Anxious group's -18.2% decrease.
+    
+    
+```{r scanning-interaction, echo=FALSE, message=FALSE, warning=FALSE}
+
+# ~~~ Filter for only the scanning metrics & CAR scenarios ~~~
+# We use df_gaze_long_all (created in the setup chunk)
+df_scanning_affirmation <- df_gaze_long_all %>%
+  filter(
+    metric %in% c("Saccade Count", "Fixation Count", "Revisit Count"),
+    scenario %in% c("car", "car_t2")
+  )
+
+# ~~~ Create Summary Table for Plotting ~~~~
+summary_for_plot <- df_scanning_affirmation %>%
+  group_by(anxiety_group, metric, scenario) %>%
+  summarise(mean_value = mean(value, na.rm = TRUE), .groups = 'drop')
+
+# ~~~ Run Statistical Test on the *Difference* ~~~
+
+# Create the per-participant difference data
+df_scanning_diff <- df_scanning_affirmation %>%
+  pivot_wider(
+    names_from = scenario,
+    values_from = value
+  ) %>%
+  mutate(difference = car_t2 - car) %>%
+  filter(!is.na(difference)) # Remove rows with missing data
+
+
+
+# ~~~ Create the Faceted "Before and After" Visualization ~~~
+scanning_interaction_plot <- ggplot(summary_for_plot, 
+                           aes(x = scenario, 
+                               y = mean_value, 
+                               color = anxiety_group, 
+                               group = anxiety_group)) +
+  # Draw the lines and points
+  geom_line(linewidth = 1.2, alpha = 0.8) +
+  geom_point(size = 3) +
+  
+  # Create a separate plot for EACH metric
+  facet_wrap(
+    ~ metric, 
+    scales = "free_y", # Let each metric have its own y-axis
+    ncol = 3           # Arrange in 3 columns
+  ) +
+  
+  labs(
+    title = "Impact of Affirmation on Visual Scanning (N = 31)",
+    subtitle = "Comparing Two Car Scenarios: Beforeand after affirmation.",
+    x = "Scenario",
+    y = "Mean Count",
+    color = "Anxiety Group"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "bottom"
+  ) +
+  scale_x_discrete(labels = c("car" = "Before", "car_t2" = "After"))
+
+# Print the plot
+print(scanning_interaction_plot)
+```
+    
+    
+    
+```{r all-4-tests, include = FALSE, message = FALSE, warning = FALSE}    
+# ~~~~ Filter data to only the car scenarios ~~~~
+df_car_data <- df_gaze_long_all %>%
+  filter(scenario %in% c("car", "car_t2"))
+
+
+# ~~~~ Run the PAIRED t-tests (Before vs. After) ~~~
+# First, create a "clean" dataset of only complete pairs
+complete_pairs_data <- df_car_data %>%
+  group_by(metric, anxiety_group, x_id) %>% # Group by participant
+  filter(n_distinct(scenario) == 2) %>%  # Keep only participants with BOTH scenarios
+  ungroup() # Ungroup for the next step
+
+# Now, run the summarise command
+paired_tests <- complete_pairs_data %>%
+  group_by(metric, anxiety_group) %>%
+  summarise(
+    test_type = "Paired t-test",
+    comparison = "Before (car) vs. After (car_t2)",
+    
+    # We create the two vectors manually. We know they are the 
+    # same length because of the 'complete_pairs_data' filter above.
+    p_value = t.test(
+      value[scenario == "car_t2"],  # Vector 1: The 'After' values
+      value[scenario == "car"],     # Vector 2: The 'Before' values
+      paired = TRUE
+    )$p.value,
+    # ---
+    
+    .groups = 'drop'
+  ) %>%
+  # Rename 'anxiety_group' so it can merge with the next table
+  rename(grouping = anxiety_group)
+
+# ~~~~ Run the INDEPENDENT t-tests (A vs. N) ~~~~
+independent_tests <- df_car_data %>%
+  group_by(metric, scenario) %>%
+  summarise(
+    test_type = "Independent t-test",
+    comparison = "Anxious vs. Non-Anxious",
+    # Safety check for "exactly 2 levels" error
+    p_value = if (n_distinct(anxiety_group) == 2) {
+      t.test(value ~ anxiety_group)$p.value
+    } else {
+      NA_real_
+    },
+    .groups = 'drop'
+  ) %>%
+  # Rename 'scenario' to match the 'paired_tests' table
+  rename(grouping = scenario)
+
+# ~~~~ Combine and Format the Final Table ~~~~
+all_tests_summary <- bind_rows(paired_tests, independent_tests) %>%
+  # Sort the table for readability
+  arrange(metric, grouping) %>%
+  # Make column names pretty
+  select(
+    "Metric" = metric,
+    "Group / Scenario" = grouping,
+    "Test Type" = test_type,
+    "Comparison" = comparison,
+    "P-Value" = p_value
+  )
+
+# ~~~~ Print the Nice Table ~~~~~~
+kable(
+  all_tests_summary,
+  caption = "Statistical Comparisons for Affirmation Scenarios",
+  digits = 3 # Rounds p-values to 3 decimal places
+)
+```
+
+
+    
+
+### Gaze Focus (Duration & Dwell Time):
+
+    The most significant finding is a difference in AOI duration (in %). The Anxious group's AOI duration (percent of time looking at the main hazard) increased by +5.9%. The Non-Anxious group's focus remained almost unchanged, increasing by only +0.4%, demostrating negative interaction between groups and intervention (positive affirmation) warranting careful consideration in the future study. 
+
+    Despite the increased focus (AOI %), the total Dwell Time (total milliseconds spent on the AOI) decreased for both groups, as the Dwell Count (number of separate dwells) also dropped. Interection for this metric is also negative for both groups and intervention.
+    
+    The combination of observations related to fewer saccades and more AOI duration suggests the affirmation may have induced a "tunnel vision" effect in the Anxious group, causing them to scan less and focus more narrowly on the primary AOI. However, results are not statistically significant and further exploration is needed with larger sample size.
+    
+    The Anxious group, which already had a longer average Fixation Duration (longer gazes), demonstrated duration increase by +5.3% after the affirmation. In contrast, the Non-Anxious group's fixation duration decreased by -1.9%, 
+    
+    
+```{r focus-interaction-plots, echo=FALSE, message=FALSE, warning=FALSE}
+
+# ~~~ Filter for only the 4 metrics of interest & CAR scenarios ~~~
+# We use df_gaze_long_all (created in the setup chunk)
+metrics_of_interest <- c(
+  "Fixation Duration Ms", 
+  "Aoi Dur Percent", 
+  "Dwell Time Ms", 
+  "Dwell Count"
+)
+
+df_focus_affirmation <- df_gaze_long_all %>%
+  filter(
+    metric %in% metrics_of_interest,
+    scenario %in% c("car", "car_t2")
+  )
+
+# ~~~ Create Summary Table for Plotting ~~~
+summary_for_plot <- df_focus_affirmation %>%
+  group_by(anxiety_group, metric, scenario) %>%
+  summarise(mean_value = mean(value, na.rm = TRUE), .groups = 'drop')
+
+# ~~~ Run Statistical Test on the *Difference* ~~~~
+
+# Create the per-participant difference data
+df_focus_diff <- df_focus_affirmation %>%
+  pivot_wider(
+    names_from = scenario,
+    values_from = value
+  ) %>%
+  mutate(difference = car_t2 - car) %>%
+  filter(!is.na(difference)) # Remove rows with missing data
+
+# Run t-tests on the difference
+stat_test_interaction <- df_focus_diff %>%
+  group_by(metric) %>%
+  summarise(
+    p_value = if (n_distinct(anxiety_group) == 2) {
+      t.test(difference ~ anxiety_group)$p.value
+    } else {
+      NA_real_
+    }
+  )
+
+# Create a data frame for the p-value labels
+y_pos_data <- summary_for_plot %>%
+  group_by(metric) %>%
+  summarise(y_pos = max(mean_value) * 1.1) # 10% buffer
+
+stat_labels <- stat_test_interaction %>%
+  filter(!is.na(p_value)) %>%
+  left_join(y_pos_data, by = "metric") %>%
+  mutate(p_label = sprintf("p = %.3f", p_value))
+
+
+# ~~~ Create the Faceted "Before and After" Visualization (2x2) ~~~
+focus_interaction_plot <- ggplot(summary_for_plot, 
+                           aes(x = scenario, 
+                               y = mean_value, 
+                               color = anxiety_group, 
+                               group = anxiety_group)) +
+  # Draw the lines and points
+  geom_line(linewidth = 1.2, alpha = 0.8) +
+  geom_point(size = 3) +
+  
+  # Create a separate plot for EACH metric in a 2x2 grid
+  facet_wrap(
+    ~ metric, 
+    scales = "free_y", # Let each metric have its own y-axis
+    ncol = 2           # Arrange in 2 columns
+  ) +
+  
+  # Add the statistical labels
+  geom_text(
+    data = stat_labels,
+    aes(x = 1.5, y = y_pos, label = p_label),
+    vjust = 1,          
+    inherit.aes = FALSE # VERY IMPORTANT!
+  ) +
+  
+  labs(
+    title = "Impact of Affirmation on Gaze Focus & Dwell (N = 31)",
+    subtitle = "Comparing Car (Before) vs. Car_T2 (After). P-value tests for the interaction.",
+    x = "Scenario",
+    y = "Mean Value of Metric",
+    color = "Anxiety Group"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "bottom",
+    strip.text = element_text(size = 9) # Make facet titles a bit smaller
+  ) +
+  scale_x_discrete(labels = c("car" = "Before", "car_t2" = "After"))
+
+# Print the plot
+print(focus_interaction_plot)
+``` 
+    
+    
+
+### Statistical Significance: 
+
+    While these results demostrate some important trends, the t-test on the difference-in-differences (comparing the change in A-group vs. the change in N-group) did not show a statistically significant interaction for all metric (all p-values > 0.05) but one. 
+    
+    This "lack of significance" does not mean there was no effect. It means we cannot statistically prove that the affirmation's effect was different for the two groups. 
+    
+
+## Major observations based on the post-experiment survey
+
+Comparing the 16 Anxious (A) participants and 15 Non-Anxious (N) participants.
+
+### Scenario-Specific Anxiety (1-9 Scale)
+
+#### Major observations based on the statistical output from your code for the 'I Was Stressed'
+
+    
+
+    Unlike some of the other metrics where the results were mixed, the agreement to the statment "I felt stressed" shows a very clear pattern. The Anxious group reported significantly higher percived stress (rated on a 1-9 scale) than the Non-Anxious group in 4 out of the 5 scenarios: Car (p=0.004), Car_T2 (p=0.006), Truck (p=0.003), and Work Zone (p=0.008).
+
+    There is a clear separation in the baseline stress ratings. The Anxious group's mean stress was always higher (lowest was 3.56). The Non-Anxious group's mean stress was consistently low (all 2.67 or below), except for the Pedestrian scenario (4.00).
+
+    The Pedestrian scenario was the only one where the stress ratings were statistically similar (p=0.145). It was also the only scenario where the Non-Anxious group's mean stress (4.00) was higher than their rating for any other scenario, suggesting this scenario was uniquely stressful for them in a way the others were not.
+    
+```{r stressed-ratings-plot, echo=FALSE, message=FALSE, warning=FALSE}
+
+# ~~~~ Create the Summary Data for the Bars ~~~~~
+# (This part is correct and unchanged)
+summary_means_wide <- i_felt_stressed_data %>%
+  group_by(anxiety_group) %>%
+  summarise(
+    Car = mean(Car, na.rm = TRUE),
+    Car_T2 = mean(Car_T2, na.rm = TRUE),
+    Pedestrian = mean(Pedestrian, na.rm = TRUE),
+    Truck = mean(Truck, na.rm = TRUE),
+    `Work Zone` = mean(`Work Zone`, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+data_to_plot <- summary_means_wide %>%
+  pivot_longer(
+    cols = -anxiety_group,
+    names_to = "scenario",
+    values_to = "mean_stress_rating"
+  ) %>%
+  mutate(
+    scenario = factor(
+      scenario, 
+      levels = c("Car", "Car_T2", "Pedestrian", "Truck", "Work Zone")
+    )
+  )
+
+# ~~~~~ Create a  Data Frame for the Difference Labels ~~~~
+# (This part is correct and unchanged)
+data_for_labels <- pivot_wider(
+    data = data_to_plot,
+    names_from = anxiety_group,
+    values_from = mean_stress_rating
+  ) %>%
+  mutate(
+    Difference = Anxious - `Non-Anxious`,
+    y_position = max(Anxious, `Non-Anxious`) + 0.3
+  )
+
+
+# ~~~~~~~~ Create the Grouped Bar Chart ~~~~~~~~~~~~
+
+ggplot(data_to_plot, aes(x = scenario, y = mean_stress_rating, fill = anxiety_group)) +
+  
+  geom_col(position = position_dodge(width = 0.9), alpha = 0.8) +
+  
+  geom_text(
+    data = data_for_labels, 
+    aes(
+      x = scenario,  # <-- Add the NEW Difference Labels
+      y = y_position, 
+      label = sprintf("Diff = %.2f", Difference)
+    ),
+    inherit.aes = FALSE, 
+    vjust = -0.5,
+    size = 3.5
+  ) +
+
+  labs(
+    title = "Agreement with 'I Felt Stressed' Statement by Scenario and Group (N = 31)",
+    subtitle = "Showing mean ratings (1-9 scale). Label indicates (Anxious - Non-Anxious) difference.",
+    x = "Driving Scenario",
+    y = "Mean Stress Rating (1-9)",
+    fill = "Anxiety Group"
+  ) +
+  
+  scale_y_continuous(limits = c(0, 9.5)) +
+  
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "bottom")
+
+
+
+# ~~~~~ Pivot the Data to Long Format ~~~~~
+# We must convert the data from wide (1 row per participant) 
+# to long (1 row per participant per scenario) to run the tests.
+df_stressed_long <- i_felt_stressed_data %>%
+  pivot_longer(
+    cols = -c(x_id, anxiety_group), # Pivot everything except ID and group
+    names_to = "scenario",
+    values_to = "stress_rating"
+  ) %>%
+  # Make sure scenario is a factor with the correct order
+  mutate(
+    scenario = factor(
+      scenario, 
+      levels = c("Car", "Car_T2", "Pedestrian", "Truck", "Work Zone")
+    )
+  )
+
+# ~~~~~ Calculate P-Values for Each Scenario ~~~~~~~~
+stress_stats <- df_stressed_long %>%
+  
+  # Group by the scenario
+  group_by(scenario) %>%
+  
+  # Run the summary t-test
+  summarise(
+    # Safety check: only run t.test if there are exactly 2 groups
+    p_value = if (n_distinct(anxiety_group) == 2) {
+      t.test(stress_rating ~ anxiety_group)$p.value
+    } else {
+      NA_real_ # Otherwise, return NA
+    },
+    .groups = 'drop' # Drop the grouping
+  )
+
+# ~~~~~~~~ 3. Print the Results in a Nice Table ~~~~~~~~~~~
+kable(
+  stress_stats,
+  caption = "T-Test P-Values: 'I Felt Stressed' (Anxious vs. Non-Anxious)",
+  digits = 3, # Round p-values to 3 decimals
+  col.names = c("Scenario", "P-Value")
+)
+
+
+```
+    
+ 
+#### Major observations based on the statistical output from your code for the 'I Was Confused' 
+
+    The Anxious group reported significantly higher confusion ratings than the Non-Anxious group in 3 out of the 5 scenarios. The differences were largest in the second Car scenario (p < 0.001), the initial Car scenario (p = 0.009), and the Work Zone scenario (p = 0.015). In the second Car scenario (Car_T2), the difference between ratings was 2.1 with Anxious group's mean confusion was 3.50, while the Non-Anxious group's was only 1.40.
+
+    Unlike the "I Felt Stressed" metric where both groups' ratings dropped in the second Car scenario, the Anxious group's "I Was Confused" rating remained high and virtually unchanged after the affirmation (Car: 3.69, Car_T2: 3.50). The Non-Anxious group, however, did see a drop in their confusion (Car: 2.07, Car_T2: 1.40). This suggests the positive affirmation did not alleviate the feeling of confusion for the Anxious participants. 
+
+    The Pedestrian and Truck scenarios were the only two where there was no statistically significant difference in confusion between the two groups. These scenarios also had the highest confusion ratings for both groups (Anxious: 3.75 & 4.56; Non-Anxious: 3.00 & 3.40), suggesting these events invoke similar confusion level for all participants, regardless of their anxiety group. 
+ 
+ 
+ 
+```{r confused-ratings-plot-and-stats, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+# ~~~~ Create the Summary Data for the Bars ~~~~
+summary_means_wide <- i_was_confused_data %>%
+  group_by(anxiety_group) %>%
+  summarise(
+    Car = mean(Car, na.rm = TRUE),
+    Car_T2 = mean(Car_T2, na.rm = TRUE),
+    Pedestrian = mean(Pedestrian, na.rm = TRUE),
+    Truck = mean(Truck, na.rm = TRUE),
+    `Work Zone` = mean(`Work Zone`, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+data_to_plot <- summary_means_wide %>%
+  pivot_longer(
+    cols = -anxiety_group,
+    names_to = "scenario",
+    values_to = "mean_confused_rating" # <-- CHANGED
+  ) %>%
+  mutate(
+    scenario = factor(
+      scenario, 
+      levels = c("Car", "Car_T2", "Pedestrian", "Truck", "Work Zone")
+    )
+  )
+
+# ~~~~~ Create a  Data Frame for the Difference Labels ~~~~
+data_for_labels <- pivot_wider(
+    data = data_to_plot,
+    names_from = anxiety_group,
+    values_from = mean_confused_rating # <-- CHANGED
+  ) %>%
+  mutate(
+    Difference = Anxious - `Non-Anxious`,
+    # Calculate y-position based on the max value in this new data
+    y_position = pmax(Anxious, `Non-Anxious`, na.rm = TRUE) + 0.3
+  )
+
+
+# ~~~~~~~~ Create the Grouped Bar Chart ~~~~~~~~~~~~
+
+ggplot(data_to_plot, aes(x = scenario, y = mean_confused_rating, fill = anxiety_group)) + # <-- CHANGED
+  
+  geom_col(position = position_dodge(width = 0.9), alpha = 0.8) +
+  
+  geom_text(
+    data = data_for_labels, 
+    aes(
+      x = scenario, 
+      y = y_position, 
+      label = sprintf("Diff = %.2f", Difference)
+    ),
+    inherit.aes = FALSE, 
+    vjust = -0.5,
+    size = 3.5
+  ) +
+
+  labs(
+    title = "Agreement with 'I Was Confused' Statement by Scenario and Group (N = 31)", # <-- CHANGED
+    subtitle = "Showing mean ratings (1-9 scale). Label indicates (Anxious - Non-Anxious) difference.",
+    x = "Driving Scenario",
+    y = "Mean Confused Rating (1-9)", # <-- CHANGED
+    fill = "Anxiety Group"
+  ) +
+  
+  scale_y_continuous(limits = c(0, 9.5)) +
+  
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "bottom")
+
+
+
+# ~~~~~ Pivot the Data to Long Format ~~~~~
+# We must convert the data from wide (1 row per participant) 
+# to long (1 row per participant per scenario) to run the tests.
+df_confused_long <- i_was_confused_data %>% # <-- CHANGED
+  pivot_longer(
+    cols = -c(x_id, anxiety_group), # Pivot everything except ID and group
+    names_to = "scenario",
+    values_to = "confused_rating" # <-- CHANGED
+  ) %>%
+  # Make sure scenario is a factor with the correct order
+  mutate(
+    scenario = factor(
+      scenario, 
+      levels = c("Car", "Car_T2", "Pedestrian", "Truck", "Work Zone")
+    )
+  )
+
+# ~~~~~ Calculate P-Values for Each Scenario ~~~~~~~~
+confused_stats <- df_confused_long %>% # <-- CHANGED
+  
+  # Group by the scenario
+  group_by(scenario) %>%
+  
+  # Run the summary t-test
+  summarise(
+    # Safety check: only run t.test if there are exactly 2 groups
+    p_value = if (n_distinct(anxiety_group) == 2) {
+      t.test(confused_rating ~ anxiety_group)$p.value # <-- CHANGED
+    } else {
+      NA_real_ # Otherwise, return NA
+    },
+    .groups = 'drop' # Drop the grouping
+  )
+
+# ~~~~~~~~ 3. Print the Results in a Nice Table ~~~~~~~~~~~
+kable(
+  confused_stats, # <-- CHANGED
+  caption = "T-Test P-Values: 'I Was Confused' (Anxious vs. Non-Anxious)", # <-- CHANGED
+  digits = 3, # Round p-values to 3 decimals
+  col.names = c("Scenario", "P-Value")
+)
+```
+ 
+ 
+ 
+#### Major observations based on the statistical analysis of the 'I Felt Safe' 
+
+(Note: For this question, a higher score (1-9) means "Completely agree" / felt more safe.)
+
+    This is the most conclusive finding across all three survey questions. The difference between the two groups is statistically significant (p < 0.01) for every single scenario. The Non-Anxious group's mean safety rating was consistently high (between 7.27 and 8.60), while the Anxious group's ratings were substantially lower (between 5.38 and 6.69).
+
+    Unlike the "confusion" metrics, the positive affirmation had a positive effect on safety ratings for both groups. The Anxious group's safety rating rose from 6.31 to 6.69, and the Non-Anxious group's rating also rose from 8.13 to 8.60. Both groups felt safest in the Car_T2 scenario.
+
+    The "Safest" Scenario for the Anxious Group Was Still Worse Than the "Least Safe" for the Non-Anxious Group. To put the gap in perspective, the highest mean safety rating for the Anxious group (6.69 in Car_T2) was still significantly lower than the lowest mean safety rating for the Non-Anxious group (7.27 in Pedestrian). 
+
+
+
+
+```{r safe-ratings-plot-and-stats, echo=FALSE, message=FALSE, warning=FALSE}
+
+# ~~~~ Create the Summary Data for the Bars ~~~~
+summary_means_wide <- i_felt_safe_data %>% # <-- CHANGED
+  group_by(anxiety_group) %>%
+  summarise(
+    Car = mean(Car, na.rm = TRUE),
+    Car_T2 = mean(Car_T2, na.rm = TRUE),
+    Pedestrian = mean(Pedestrian, na.rm = TRUE),
+    Truck = mean(Truck, na.rm = TRUE),
+    `Work Zone` = mean(`Work Zone`, na.rm = TRUE),
+    .groups = 'drop'
+  )
+
+data_to_plot <- summary_means_wide %>%
+  pivot_longer(
+    cols = -anxiety_group,
+    names_to = "scenario",
+    values_to = "mean_safe_rating" # <-- CHANGED
+  ) %>%
+  mutate(
+    scenario = factor(
+      scenario, 
+      levels = c("Car", "Car_T2", "Pedestrian", "Truck", "Work Zone")
+    )
+  )
+
+# ~~~~~ Create a  Data Frame for the Difference Labels ~~~~
+data_for_labels <- pivot_wider(
+    data = data_to_plot,
+    names_from = anxiety_group,
+    values_from = mean_safe_rating # <-- CHANGED
+  ) %>%
+  mutate(
+    Difference = Anxious - `Non-Anxious`,
+    # Calculate y-position based on the max value in this new data
+    y_position = pmax(Anxious, `Non-Anxious`, na.rm = TRUE) + 0.3
+  )
+
+
+# ~~~~~~~~ Create the Grouped Bar Chart ~~~~~~~~~~~~
+
+ggplot(data_to_plot, aes(x = scenario, y = mean_safe_rating, fill = anxiety_group)) + # <-- CHANGED
+  
+  geom_col(position = position_dodge(width = 0.9), alpha = 0.8) +
+  
+  geom_text(
+    data = data_for_labels, 
+    aes(
+      x = scenario, 
+      y = y_position, 
+      label = sprintf("Diff = %.2f", Difference)
+    ),
+    inherit.aes = FALSE, 
+    vjust = -0.5,
+    size = 3.5
+  ) +
+
+  labs(
+    title = "Agreement with 'I Felt Safe' Statement by Scenario and Group (N = 31)", # <-- CHANGED
+    subtitle = "Showing mean ratings (1-9 scale). Label indicates (Anxious - Non-Anxious) difference.",
+    x = "Driving Scenario",
+    y = "Mean Safe Rating (1-9)", # <-- CHANGED
+    fill = "Anxiety Group"
+  ) +
+  
+  scale_y_continuous(limits = c(0, 9.5)) +
+  
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "bottom")
+
+
+
+# ~~~~~ Pivot the Data to Long Format ~~~~~
+# We must convert the data from wide (1 row per participant) 
+# to long (1 row per participant per scenario) to run the tests.
+df_safe_long <- i_felt_safe_data %>% # <-- CHANGED
+  pivot_longer(
+    cols = -c(x_id, anxiety_group), # Pivot everything except ID and group
+    names_to = "scenario",
+    values_to = "safe_rating" # <-- CHANGED
+  ) %>%
+  # Make sure scenario is a factor with the correct order
+  mutate(
+    scenario = factor(
+      scenario, 
+      levels = c("Car", "Car_T2", "Pedestrian", "Truck", "Work Zone")
+    )
+  )
+
+# ~~~~~ Calculate P-Values for Each Scenario ~~~~~~~~
+safe_stats <- df_safe_long %>% # <-- CHANGED
+  
+  # Group by the scenario
+  group_by(scenario) %>%
+  
+  # Run the summary t-test
+  summarise(
+    # Safety check: only run t.test if there are exactly 2 groups
+    p_value = if (n_distinct(anxiety_group) == 2) {
+      t.test(safe_rating ~ anxiety_group)$p.value # <-- CHANGED
+    } else {
+      NA_real_ # Otherwise, return NA
+    },
+    .groups = 'drop' # Drop the grouping
+  )
+
+# ~~~~~~~~ 3. Print the Results in a Nice Table ~~~~~~~~~~~
+kable(
+  safe_stats, # <-- CHANGED
+  caption = "T-Test P-Values: 'I Felt Safe' (Anxious vs. Non-Anxious)", # <-- CHANGED
+  digits = 3, # Round p-values to 3 decimals
+  col.names = c("Scenario", "P-Value")
+)
+```
+ 
+ 
+ 
+
+
+### Post-Experiment Perceptions: Simulation Sickness
+
+    Both groups reported very similar levels of simulator sickness, with the Anxious group's mean SSQ score (3.17) being only slightly higher than the Non-Anxious group's (3.05).
+
+    9. Anxious Group Rated Realism Higher: Contrary to what might be expected, the Anxious group rated the "Overall realism of the simulation" (Percep_Realism) and "Realism of visual events" (Percep_Events) significantly higher than the Non-Anxious group.
+
+    10. Non-Anxious Group Rated Simulator Control Higher: The Non-Anxious group gave higher ratings for Percep_Steering (5.53 vs 5.06) and Percep_Response (5.20 vs 4.56), suggesting they felt the simulator's controls were more realistic or comfortable than the Anxious group did.  
+    
+    
+```{r ssq-plot, echo=FALSE, message=FALSE, warning=FALSE}
+
+# ~~~~ Define SSQ Columns ~~~~~
+# Creates a vector of names: "Q141_1", "Q141_2", ..., "Q141_15"
+ssq_cols <- paste0("Q141_", 1:15)
+
+# ~~~~~ Calculate Mean SSQ Score per Participant ~~~~
+ssq_data <- df_phase2_analysis %>%
+  
+  # Ensure all SSQ columns are numeric, coercing errors
+  mutate(across(all_of(ssq_cols), ~as.numeric(as.character(.)))) %>%
+  
+  # Calculate the average score for each person
+  mutate(ssq_total_score = rowMeans(select(., all_of(ssq_cols)), na.rm = TRUE)) %>%
+  
+  # We only need the ID, group, and new score
+  select(x_id, anxiety_group, ssq_total_score) %>%
+  filter(!is.na(ssq_total_score))
+
+# ~~~~ Calculate Mean SSQ Score by Group ~~~~
+ssq_summary <- ssq_data %>%
+  group_by(anxiety_group) %>%
+  summarise(mean_ssq = mean(ssq_total_score, na.rm = TRUE), .groups = 'drop')
+
+# ~~~~ Print the Summary Table (Outputs 3.17 and 3.05) ~~~~
+kable(ssq_summary, 
+      digits = 2, 
+      caption = "Mean Simulator Sickness (SSQ) Score",
+      col.names = c("Anxiety Group", "Mean SSQ Score"))
+
+# ~~~~ Create the Plot ~~~`
+ggplot(ssq_summary, aes(x = anxiety_group, y = mean_ssq, fill = anxiety_group)) +
+  geom_col(width = 0.7, alpha = 0.8) +
+  
+  # Add the text labels
+  geom_text(aes(label = sprintf("%.2f", mean_ssq)), vjust = -0.5, size = 4) +
+  
+  labs(
+    title = "Simulator Sickness Was Similar (N=31)",
+    subtitle = "Mean score across all 15 SSQ questions",
+    x = "Anxiety Group",
+    y = "Mean SSQ Score"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+```
+
+
+### Post-Experiment Perceptions: Simulator Perception
+
+    Contrary to what might be expected, the Anxious group rated the "Overall realism of the simulation" and "Realism of visual events" higher than the Non-Anxious group.
+
+    The Non-Anxious group gave higher ratings for percieved steering realism (5.53 vs 5.06) and percieved steering vehicle response (5.20 vs 4.56), suggesting they felt the simulator's controls were more realistic or comfortable than the Anxious group did.
+
+
+```{r perception-plot, echo=FALSE, message=FALSE, warning=FALSE}
+
+# ~~~~Define Perception Columns and Pretty Labels ~~~~
+perception_cols <- c(
+  "QID141_1" = "Realism of Sim",
+  "QID141_7" = "Realism of Events",
+  "QID141_4" = "Steering Control",
+  "QID141_8" = "Vehicle Response"
+)
+
+# ~~~~Calculate Mean Ratings by Group ~~~
+perception_summary <- df_phase2_analysis %>%
+  # Select only the relevant columns
+  select(anxiety_group, all_of(names(perception_cols))) %>%
+  
+  # Make sure they are all numeric
+  mutate(across(-anxiety_group, ~as.numeric(as.character(.)))) %>%
+  
+  # Pivot to long format for analysis
+  pivot_longer(
+    cols = -anxiety_group,
+    names_to = "question_id",
+    values_to = "rating"
+  ) %>%
+  filter(!is.na(rating)) %>%
+  
+  # Create pretty labels
+  mutate(question_label = recode(question_id, !!!perception_cols)) %>%
+  
+  # Calculate means
+  group_by(anxiety_group, question_label) %>%
+  summarise(mean_rating = mean(rating, na.rm = TRUE), .groups = 'drop')
+
+# ~~~~Print the Summary Table (Outputs all the numbers)~~~~
+print("~~~ Mean Simulator Perception Ratings (1-9 Scale) ~~~")
+kable(
+  perception_summary %>% 
+    pivot_wider(names_from = anxiety_group, values_from = mean_rating) %>%
+    # Re-order rows to match your observations
+    mutate(
+      question_label = factor(question_label, 
+                              levels = c("Realism of Sim", "Realism of Events", 
+                                         "Steering Control", "Vehicle Response"))
+    ) %>%
+    arrange(question_label),
+  digits = 2,
+  caption = "Mean Simulator Perception Ratings (1-9 Scale)"
+)
+
+# ~~~~Create the Plot ~~~~
+ggplot(perception_summary, aes(x = question_label, y = mean_rating, fill = anxiety_group)) +
+  
+  # Create side-by-side bars
+  geom_col(position = position_dodge(width = 0.9), alpha = 0.8) +
+  
+  # Add text labels to bars
+  geom_text(
+    aes(label = sprintf("%.2f", mean_rating)),
+    position = position_dodge(width = 0.9),
+    vjust = -0.5,
+    size = 3.5
+  ) +
+  
+  labs(
+    title = "Simulator Perception by Anxiety Group (N=31)",
+    subtitle = "Anxious group rated realism higher; Non-Anxious group rated control higher",
+    x = "Survey Question",
+    y = "Mean Rating (1-9)",
+    fill = "Anxiety Group"
+  ) +
+  scale_y_continuous(limits = c(0, 9)) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 15, hjust = 1))
+```
+
+
+
+
+  
+    
+    
+    
+    
